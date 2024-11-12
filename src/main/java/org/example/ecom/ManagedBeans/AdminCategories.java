@@ -17,7 +17,6 @@ public class AdminCategories {
 
   public AdminCategories() {}
 
-
   public void setLisCategories(List<Category> lisCategories) {
     this.lisCategories = lisCategories;
   }
@@ -69,5 +68,4 @@ public class AdminCategories {
   public void prepareNewCategory() {
     this.category = new Category();
   }
-
 }

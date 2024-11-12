@@ -24,6 +24,9 @@
                     <p:column headerText="ID">
                         <h:outputText value="#{product.id}"/>
                     </p:column>
+                    <p:column headerText="Image">
+                        <p:graphicImage value="/resources#{product.image}" alt="Product Photo" style="width: 50px; height: 50px;" />
+                    </p:column>
                     <p:column headerText="Name" filterBy="#{product.name}" filterMatchMode="contains">
                         <h:outputText value="#{product.name}"/>
                     </p:column>
@@ -47,7 +50,7 @@
                                          actionListener="#{adminProducts.deleteProduct(product.id)}"
                                          update=":mainForm:productTable"
                                          ajax="true"
-                                         >
+                        >
                         </p:commandButton>
                     </p:column>
                 </p:dataTable>
@@ -57,7 +60,7 @@
         <!-- Dialog for Adding/Updating Product -->
         <p:dialog id="productDialog" header="Add/Edit Product" widgetVar="productDialog" modal="true" closable="true"
                   resizable="false" appendTo="@(body)">
-            <h:form id="productDialogForm">
+            <h:form id="productDialogForm" enctype="multipart/form-data">
                 <p:messages id="msgs" showDetail="true" closable="true"/>
 
                 <h:panelGrid columns="2" cellpadding="5">
@@ -94,13 +97,14 @@
 
                     <p:outputLabel for="image">Image</p:outputLabel>
                     <p:fileUpload id="image" value="#{adminProducts.file}" mode="simple"
-                                  accept=".jpg,.jpeg,.png" />
+                                  accept=".jpg,.jpeg,.png"/>
                 </h:panelGrid>
 
                 <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix">
                     <p:commandButton value="#{adminProducts.product.id != null ? 'Update' : 'Add'}"
                                      actionListener="#{adminProducts.saveProduct}"
                                      update=":mainForm:productTable,:productDialogForm:msgs"
+                                     ajax="false"
                                      oncomplete="if (!args.validationFailed) {PF('productDialog').hide();}"/>
                     <p:commandButton value="Cancel"
                                      onclick="PF('productDialog').hide()"

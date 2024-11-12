@@ -1,16 +1,11 @@
 package org.example.ecom.ManagedBeans;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
 import java.util.List;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
 import org.example.ecom.Service.CategoryDaoImp;
 import org.example.ecom.Service.ProductDaoImpl;
 import org.example.ecom.model.Category;
@@ -40,6 +35,24 @@ public class AdminProducts implements Serializable {
 
   public void setFile(UploadedFile file) {
     this.file = file;
+    ServletContext servletContext =
+        (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+    String path =
+        servletContext.getRealPath("") + "resources" + File.separator + "img" + File.separator;
+    System.out.println(path);
+    try {
+      @SuppressWarnings("resource")
+      OutputStream outputStream = new FileOutputStream(path + file.getFileName());
+      InputStream inputStream = file.getInputStream();
+      byte[] buffer = new byte[1024];
+      int bytesRead;
+
+      while ((bytesRead = inputStream.read(buffer)) != -1) {
+        outputStream.write(buffer, 0, bytesRead);
+      }
+    } catch (Exception e) {
+      System.err.println("Error during file upload: " + e.getMessage());
+    }
   }
 
   private void loadCategories() {
@@ -52,16 +65,6 @@ public class AdminProducts implements Serializable {
   }
 
   public void saveProduct() {
-    if (file != null && file.getFileName() != null) {
-      String fileType = file.getContentType();
-      if (!fileType.equals("image/jpeg") && !fileType.equals("image/png") && !fileType.equals("image/gif")) {
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Invalid file type. Please upload a JPEG, PNG, or GIF image.", null));
-        return;
-      }
-      this.product.setImage(uploadImage());
-    }
-
     try {
       if (selectedCategoryId != null) {
         Category selectedCategory = categoryDaoImp.getById(selectedCategoryId).orElse(null);
@@ -70,6 +73,7 @@ public class AdminProducts implements Serializable {
         }
       }
 
+      product.setImage("/img/"+file.getFileName());
       if (product.getId() != null) {
         productDaoImp.update(product);
       } else {
@@ -79,32 +83,10 @@ public class AdminProducts implements Serializable {
       this.listProducts = productDaoImp.getAll();
       this.product = new Product();
       this.selectedCategoryId = null;
+      this.file = null;
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
-  }
-
-  public String uploadImage() {
-    try {
-      String uploadDir = FacesContext.getCurrentInstance().getExternalContext().getRealPath("/resources/images");
-      File dir = new File(uploadDir);
-      if (!dir.exists()) {
-        dir.mkdirs();
-      }
-
-      String fileName = System.currentTimeMillis() + "_" + file.getFileName();
-      Path filePath = Paths.get(uploadDir, fileName);
-
-      try (InputStream input = file.getInputStream()) {
-        Files.copy(input, filePath);
-      }
-
-      return fileName;
-    } catch (Exception e) {
-      FacesContext.getCurrentInstance().addMessage(null,
-              new FacesMessage(FacesMessage.SEVERITY_ERROR, "File upload failed!", null));
-    }
-    return null;
   }
 
   public void deleteProduct(Long id) {
@@ -122,9 +104,9 @@ public class AdminProducts implements Serializable {
     return listProducts;
   }
 
-    public void setListProducts(List<Product> listProducts) {
-        this.listProducts = listProducts;
-    }
+  public void setListProducts(List<Product> listProducts) {
+    this.listProducts = listProducts;
+  }
 
   public List<Product> getFilteredProducts() {
     return filteredProducts;
@@ -149,9 +131,9 @@ public class AdminProducts implements Serializable {
     return categoryList;
   }
 
-    public void setCategoryList(List<Category> categoryList) {
-        this.categoryList = categoryList;
-    }
+  public void setCategoryList(List<Category> categoryList) {
+    this.categoryList = categoryList;
+  }
 
   public Long getSelectedCategoryId() {
     return selectedCategoryId;

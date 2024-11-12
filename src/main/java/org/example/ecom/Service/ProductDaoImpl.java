@@ -2,10 +2,15 @@ package org.example.ecom.Service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.Transactional;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.example.ecom.Dao.Dao;
 import org.example.ecom.Util.EntityManagerProvider;
+import org.example.ecom.model.Category;
 import org.example.ecom.model.Product;
 
 public class ProductDaoImpl implements Dao<Product> {
@@ -197,5 +202,27 @@ public class ProductDaoImpl implements Dao<Product> {
     } finally {
       entityManager.close();
     }
+  }
+
+  @Transactional
+  public Map<Category, Long> countProductsByCategory() {
+    EntityManager entityManager = EntityManagerProvider.getEntityManager();
+    Map<Category, Long> categoryCounts = new HashMap<>();
+
+    // JPQL query to count products by category
+    String jpql = "SELECT p.category, COUNT(p) FROM Product p GROUP BY p.category";
+    TypedQuery<Object[]> query = entityManager.createQuery(jpql, Object[].class);
+
+    // Execute the query and get the result list
+    List<Object[]> resultList = query.getResultList();
+
+    // Process the result list and populate the categoryCounts map
+    for (Object[] result : resultList) {
+      Category category = (Category) result[0];
+      Long count = (Long) result[1];
+      categoryCounts.put(category, count);
+    }
+
+    return categoryCounts;
   }
 }

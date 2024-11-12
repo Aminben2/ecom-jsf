@@ -3,13 +3,14 @@ package org.example.ecom.Service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import org.example.ecom.Dao.Dao;
 import org.example.ecom.Util.EntityManagerProvider;
 import org.example.ecom.model.Category;
 
-public class CategoryDaoImp implements Dao<Category> {
+public class CategoryDaoImp implements Dao<Category>, Serializable {
   public CategoryDaoImp() {
   }
 
